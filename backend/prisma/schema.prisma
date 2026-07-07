@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  servers      DiscordServer[]
+}
+
+model DiscordServer {
+  id             String           @id @default(uuid())
+  guildId        String           @unique
+  guildName      String
+  ownerId        String?
+  botChannelId   String?
+  isActive       Boolean          @default(true)
+  adminId        String
+  admin          Admin            @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  commandRules   CommandRule[]
+  interactionLogs InteractionLog[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model CommandRule {
+  id               String        @id @default(uuid())
+  serverId         String
+  server           DiscordServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  commandName      String
+  enabled          Boolean       @default(true)
+  responseTemplate String?
+  mirrorEnabled    Boolean       @default(true)
+  autoTagEnabled   Boolean       @default(false)
+  config           Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@unique([serverId, commandName])
+}
+
+enum InteractionStatus {
+  RECEIVED
+  PROCESSING
+  COMPLETED
+  DEFERRED
+  FAILED
+  DUPLICATE
+}
+
+model InteractionLog {
+  id              String            @id @default(uuid())
+  interactionId   String            @unique
+  serverId        String?
+  server          DiscordServer?    @relation(fields: [serverId], references: [id], onDelete: SetNull)
+  commandName     String?
+  userId          String
+  userName        String?
+  channelId       String?
+  status          InteractionStatus @default(RECEIVED)
+  requestPayload  Json
+  responsePayload Json?
+  errorMessage    String?
+  tags            String[]          @default([])
+  aiSummary       String?
+  processingMs    Int?
+  retryCount      Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  failures        FailureLog[]
+}
+
+model FailureLog {
+  id               String         @id @default(uuid())
+  interactionLogId String
+  interactionLog   InteractionLog @relation(fields: [interactionLogId], references: [id], onDelete: Cascade)
+  attemptNumber    Int
+  errorMessage     String
+  stackTrace       String?
+  createdAt        DateTime       @default(now())
+}
+
+model AppSettings {
+  id                String   @id @default("default")
+  mirrorWebhookUrl  String?
+  mirrorWebhookType String?
+  aiProvider        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

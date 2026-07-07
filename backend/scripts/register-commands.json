@@ -1,0 +1,40 @@
+[
+  {
+    "name": "report",
+    "description": "Submit a report with title, description, and severity",
+    "type": 1,
+    "options": [
+      {
+        "name": "title",
+        "description": "Report title",
+        "type": 3,
+        "required": true,
+        "max_length": 100
+      },
+      {
+        "name": "description",
+        "description": "Detailed description of the issue",
+        "type": 3,
+        "required": true,
+        "max_length": 1000
+      },
+      {
+        "name": "severity",
+        "description": "Severity level",
+        "type": 3,
+        "required": false,
+        "choices": [
+          { "name": "Low", "value": "low" },
+          { "name": "Medium", "value": "medium" },
+          { "name": "High", "value": "high" },
+          { "name": "Critical", "value": "critical" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "status",
+    "description": "Check CommandBridge system status",
+    "type": 1
+  }
+]
