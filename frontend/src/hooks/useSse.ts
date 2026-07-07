@@ -1,7 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { InteractionLog, Stats } from '../api/client';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+import { getApiBase } from '../config/api';
+
+const API_BASE = getApiBase();
 
 interface SseEvent {
   type: 'interaction' | 'stats';
